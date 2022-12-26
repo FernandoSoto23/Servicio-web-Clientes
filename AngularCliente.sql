@@ -1,7 +1,7 @@
 --crear base de datos
-create database WebServiceDesarrolloWebII
-----crear tabla
-create table Cliente2(
+create database [Nombre de tu base de datos]
+----crear tablas
+create table Cliente(
 	[id] [int] NOT NULL PRIMARY KEY,
 	[nombre] [varchar](150) NOT NULL,
 	[direccion] [varchar](150) NOT NULL,
@@ -9,6 +9,32 @@ create table Cliente2(
 	[correo] [varchar](150) UNIQUE NULL,
 	[telefono] [varchar](15) NULL,
 );
+
+create table usuario(
+	id int not null primary key identity(1,1),
+	Usuario varchar(150) not null unique,
+	nombre varchar(150) not null,
+	email varchar(150) not null unique,
+	pwd varchar(150) not null,
+	telefono varchar(150),
+	[admin] char(1) check([admin]='s' or [admin] = 'n'),
+	activo char(1) check(activo='s' or activo = 'n')
+
+)
+
+create table pedido(
+	idPedido int not null identity(1001,1),
+	idCliente int not null references Cliente(id) on delete no action on update no action,
+	NombrePedido varchar(150),
+	Observaciones varchar(2000)
+	primary key(idPedido,IdCliente)
+
+)
+
+alter table pedido alter column precio numeric(12,2) check(precio > 0)
+
+
+select * from pedido
 --insertar datos a la tabla
 insert into cliente values(0,' ',' ',' ',' ',' ');
 insert into cliente values(1,'Jose','Alamos','331314544','jose1@hotmail.com','99584394646');
@@ -18,18 +44,22 @@ insert into cliente values(4,'pedro vazques','veracruz','xxxxxxxxxxx','pVazques@
 insert into cliente values(5,'valentil elizalde','paris','zzzzzzzzz','vElizald@hotmail.com','545455121');
 insert into cliente values(6,'hector herrera','las vegas','ssssssssss','HH@hotmail.com','33232246461');
 
+
+
+
 --crear procedimiento almacenado
 
-create proc spConsultar(@id int)
+alter proc spConsultar(@id int)
 as
 begin
-	if(@id = 0)begin
+	if not exists(select * from cliente where id = @id)begin
 		set @id = ((select max(id) from cliente)+1)
 		select id=@id,nombre,direccion,rfc, correo ,telefono from cliente where id = 0
 		return
 	end
 	select * from cliente where id = @id
 end
+
 
 alter proc spAddClient(@id int,@nombre varchar(150),@direccion varchar(150),@rfc char(13),@correo varchar(150),@telefono varchar(20))
 as
@@ -54,11 +84,40 @@ begin
 			select * from cliente where nombre like '%' + @cadena +  '%' 
 		end 
 end
-select * from cliente
 
-spAddClient 7,'manuel','mochis','31334544','manuel21@hotmail.com','945394646'
+alter proc spDeleteClient(@id int)
+as
+begin
+	
+	delete from pedido where idCliente = @id
+	
+end
 
 
-spConsultarClientes 'fer'
+--triggers
 
-spConsultar 0
+
+
+alter trigger dbo.deleteCliente on dbo.pedido
+after delete
+as
+begin
+	declare @idPedido int,
+			@idCliente int,
+			@nombrePedido varchar(150),
+			@precio numeric(12,2),
+			@Observaciones varchar(2000)
+
+	declare MiCursor cursor for select * from deleted
+	open Micursor
+	fetch next from miCursor into @idPedido,@idCliente,@nombrePedido, @Observaciones,@precio
+	while(@@FETCH_STATUS = 0)begin
+		if not exists(select * from pedido where idCliente = @idCliente)begin
+			delete from cliente where id = @idCliente
+		end
+		fetch next from miCursor into @idPedido,@idCliente,@nombrePedido, @Observaciones,@precio
+	end
+	close MiCursor
+	deallocate miCursor
+	
+end
