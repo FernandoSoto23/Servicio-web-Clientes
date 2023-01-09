@@ -12,7 +12,7 @@ namespace WebService.Models
 
         public static void Conectar()
         {
-            conx.ConnectionString = "server=DESKTOP-S70CQ5F\\SQLEXPRESS;Database=WebServiceDesarrolloWebII;user id=sa; password=fernando1234;";
+            conx.ConnectionString = "server=localhost;Database=SistemaClientes;user id=sa; password=fernando1234;";
             conx.Open();
         }
         public static void Desconectar()

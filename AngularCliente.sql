@@ -1,14 +1,16 @@
 --crear base de datos
-create database [Nombre de tu base de datos]
+create database [SistemaClientes]
 ----crear tablas
 create table Cliente(
-	[id] [int] NOT NULL PRIMARY KEY,
+	[id] [int] NOT NULL PRIMARY KEY identity(1,1),
 	[nombre] [varchar](150) NOT NULL,
 	[direccion] [varchar](150) NOT NULL,
 	[rfc] [char](13) NULL,
 	[correo] [varchar](150) UNIQUE NULL,
 	[telefono] [varchar](15) NULL,
 );
+
+
 
 create table usuario(
 	id int not null primary key identity(1,1),
@@ -30,11 +32,9 @@ create table pedido(
 	primary key(idPedido,IdCliente)
 
 )
+alter table pedido add precio numeric(12,2) check(precio > 0)
 
-alter table pedido alter column precio numeric(12,2) check(precio > 0)
 
-
-select * from pedido
 --insertar datos a la tabla
 insert into cliente values(0,' ',' ',' ',' ',' ');
 insert into cliente values(1,'Jose','Alamos','331314544','jose1@hotmail.com','99584394646');
@@ -49,7 +49,7 @@ insert into cliente values(6,'hector herrera','las vegas','ssssssssss','HH@hotma
 
 --crear procedimiento almacenado
 
-alter proc spConsultar(@id int)
+create proc spConsultar(@id int)
 as
 begin
 	if not exists(select * from cliente where id = @id)begin
@@ -65,27 +65,27 @@ alter proc spAddClient(@id int,@nombre varchar(150),@direccion varchar(150),@rfc
 as
 begin
 	if not exists(select id from cliente where id = @id)begin
-			insert into cliente(id,nombre,direccion,rfc,correo,telefono)
-			values(@id,@nombre,@direccion,@rfc,@correo,@telefono);
+			insert into cliente(nombre,direccion,rfc,correo,telefono)
+			values(@nombre,@direccion,@rfc,@correo,@telefono);
 		end
-	update cliente set nombre = @nombre,direccion = @direccion, rfc = @rfc,correo = @correo,telefono = @telefono
+	update cliente 
+	set nombre = @nombre,direccion = @direccion, rfc = @rfc,correo = @correo,telefono = @telefono
 	where id = @id
+
 end 
 
-alter proc spConsultarClientes(@cadena varchar(150))
+create proc spConsultarClientes(@cadena varchar(150))
 as
 begin
 	if(@cadena = '0')begin
 			select*from cliente
 		end
 		else begin
-			declare @cadena varchar(150)
-			set @cadena = 'j'
 			select * from cliente where nombre like '%' + @cadena +  '%' 
 		end 
 end
 
-alter proc spDeleteClient(@id int)
+create proc spDeleteClient(@id int)
 as
 begin
 	
@@ -98,7 +98,7 @@ end
 
 
 
-alter trigger dbo.deleteCliente on dbo.pedido
+create trigger dbo.deleteCliente on dbo.pedido
 after delete
 as
 begin
@@ -121,3 +121,6 @@ begin
 	deallocate miCursor
 	
 end
+
+select * from Cliente
+
