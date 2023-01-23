@@ -124,3 +124,8 @@ end
 
 select * from Cliente
 
+select idPedido, idCliente, c.nombre as NombreCliente,NombrePedido,Observaciones,precio 
+from pedido as p 
+inner join cliente as c 
+on p.idCliente = c.id
+
